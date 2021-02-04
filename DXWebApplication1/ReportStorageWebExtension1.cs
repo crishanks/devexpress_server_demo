@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using DevExpress.XtraReports.UI;
 using DevExpress.XtraReports.Web.Extensions;
@@ -13,27 +14,24 @@ namespace DXWebApplication1
         {
             Reports.Add("Products", new XtraReport1());
         }
-
         public override bool CanSetData(string url)
         {
-            return base.CanSetData(url);
+            return true;
         }
-        public override bool IsValidUrl(string url)
-        {
-            return base.IsValidUrl(url);
-        }
-
         public override byte[] GetData(string url)
         {
-            return base.GetData(url);
+            var report = Reports[url];
+            using (MemoryStream stream = new MemoryStream())
+            {
+                report.SaveLayoutToXml(stream);
+                return stream.ToArray();
+            }
         }
-
         public override Dictionary<string, string> GetUrls()
         {
             return Reports.ToDictionary(x => x.Key, y => y.Key);
         }
-
-        public override void SetData(DevExpress.XtraReports.UI.XtraReport report, string url)
+        public override void SetData(XtraReport report, string url)
         {
             if (Reports.ContainsKey(url))
             {
@@ -44,12 +42,14 @@ namespace DXWebApplication1
                 Reports.Add(url, report);
             }
         }
-
-        public override string SetNewData(DevExpress.XtraReports.UI.XtraReport report, string defaultUrl)
+        public override string SetNewData(XtraReport report, string defaultUrl)
         {
             SetData(report, defaultUrl);
-            //return base.SetNewData(report, defaultUrl);
             return defaultUrl;
+        }
+        public override bool IsValidUrl(string url)
+        {
+            return true;
         }
     }
 }
